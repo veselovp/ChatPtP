@@ -1,0 +1,14 @@
+import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBmsMfpbVnCVuFBGPcDa4rIE18VnKlsYXY',
+  authDomain: 'chatapp-f59d3.firebaseapp.com',
+  projectId: 'chatapp-f59d3',
+  storageBucket: 'chatapp-f59d3.appspot.com',
+  messagingSenderId: '16603225495',
+  appId: '1:16603225495:web:b41a2e7bfc7bf815b2f8d2',
+}
+
+export const app = initializeApp(firebaseConfig)
+export const auth = getAuth()
