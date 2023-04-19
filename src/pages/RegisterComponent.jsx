@@ -1,27 +1,60 @@
-import React from 'react'
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../firebase'
+import React, { useState } from 'react'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { doc, setDoc } from 'firebase/firestore'
+
+import { auth, db, storage } from '../firebase'
 
 const RegisterComponent = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const displayName = e.target[0].value
-    const email = e.target[1].value
-    const password = e.target[2].value
-    const file = e.target[3].files[0]
+  const [err, setErr] = useState(false)
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user
-        console.log(user)
-      })
-      .catch((error) => {
-        const errorCode = error.code
-        const errorMessage = error.message
-        // ..
-      })
-  }
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+    const displayName = e.target[0].value;
+    const email = e.target[1].value;
+    const password = e.target[2].value;
+    const file = e.target[3].files[0];
+
+    try {
+      //Create user
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+
+      //Create a unique image name
+      const date = new Date().getTime();
+      const storageRef = ref(storage, `${displayName + date}`);
+
+      await uploadBytesResumable(storageRef, file).then(() => {
+        getDownloadURL(storageRef).then(async (downloadURL) => {
+          try {
+            //Update profile
+            await updateProfile(res.user, {
+              displayName,
+              photoURL: downloadURL,
+            });
+            //create user on firestore
+            await setDoc(doc(db, "users", res.user.uid), {
+              uid: res.user.uid,
+              displayName,
+              email,
+              photoURL: downloadURL,
+            });
+
+            //create empty user chats on firestore
+            await setDoc(doc(db, "userChats", res.user.uid), {});
+
+          } catch (err) {
+            console.log(err);
+            setErr(true);
+
+          }
+        });
+      });
+    } catch (err) {
+      setErr(true);
+
+    }
+  };
   return (
     <div className="formContainer">
       <div className="formWrapper">
@@ -34,6 +67,7 @@ const RegisterComponent = () => {
           <input style={{ display: 'none' }} type="file" id="file" />
           <label htmlFor="file">ADD IMAGE +</label>
           <button>sign up</button>
+          {err && <span>here is something wrong</span>}
         </form>
         <p>do you have account? login</p>
       </div>
