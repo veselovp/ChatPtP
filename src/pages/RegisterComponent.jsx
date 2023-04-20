@@ -3,26 +3,29 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { doc, setDoc } from 'firebase/firestore'
 
+import { useNavigate, Link } from 'react-router-dom'
+
 import { auth, db, storage } from '../firebase'
 
 const RegisterComponent = () => {
   const [err, setErr] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const navigate = useNavigate()
 
-    e.preventDefault();
-    const displayName = e.target[0].value;
-    const email = e.target[1].value;
-    const password = e.target[2].value;
-    const file = e.target[3].files[0];
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const displayName = e.target[0].value
+    const email = e.target[1].value
+    const password = e.target[2].value
+    const file = e.target[3].files[0]
 
     try {
       //Create user
-      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const res = await createUserWithEmailAndPassword(auth, email, password)
 
       //Create a unique image name
-      const date = new Date().getTime();
-      const storageRef = ref(storage, `${displayName + date}`);
+      const date = new Date().getTime()
+      const storageRef = ref(storage, `${displayName + date}`)
 
       await uploadBytesResumable(storageRef, file).then(() => {
         getDownloadURL(storageRef).then(async (downloadURL) => {
@@ -31,30 +34,28 @@ const RegisterComponent = () => {
             await updateProfile(res.user, {
               displayName,
               photoURL: downloadURL,
-            });
+            })
             //create user on firestore
-            await setDoc(doc(db, "users", res.user.uid), {
+            await setDoc(doc(db, 'users', res.user.uid), {
               uid: res.user.uid,
               displayName,
               email,
               photoURL: downloadURL,
-            });
+            })
 
             //create empty user chats on firestore
-            await setDoc(doc(db, "userChats", res.user.uid), {});
-
+            await setDoc(doc(db, 'userChats', res.user.uid), {})
+            navigate('/')
           } catch (err) {
-            console.log(err);
-            setErr(true);
-
+            console.log(err)
+            setErr(true)
           }
-        });
-      });
+        })
+      })
     } catch (err) {
-      setErr(true);
-
+      setErr(true)
     }
-  };
+  }
   return (
     <div className="formContainer">
       <div className="formWrapper">
@@ -69,7 +70,9 @@ const RegisterComponent = () => {
           <button>sign up</button>
           {err && <span>here is something wrong</span>}
         </form>
-        <p>do you have account? login</p>
+        <p>
+          do you have account? <Link to="/login">login</Link>
+        </p>
       </div>
     </div>
   )
