@@ -64,7 +64,7 @@ const RegisterComponent = () => {
         <form onSubmit={handleSubmit}>
           <input type="text" placeholder="displayname" />
           <input type="email" placeholder="email" />
-          <input type="password" placeholder="password" />
+          <input type="password" placeholder="password 6 symbols" />
           <input style={{ display: 'none' }} type="file" id="file" />
           <label htmlFor="file">ADD IMAGE +</label>
           <button>sign up</button>
