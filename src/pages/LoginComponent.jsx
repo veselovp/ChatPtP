@@ -29,7 +29,7 @@ const LoginComponent = () => {
         <span className="title">login</span>
         <form onSubmit={handleSubmit}>
           <input type="email" placeholder="email" />
-          <input type="password" placeholder="password" />
+          <input type="password" placeholder="password 6 symbols" />
           <button>sign in</button>
           {err && <span>here is something wrong</span>}
         </form>
